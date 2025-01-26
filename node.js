@@ -1,5 +1,7 @@
 require('dotenv').config()
 const express = require('express');
+const path = require('path');
+
 const app = express()
 const { Client } = require('pg');
 
@@ -25,6 +27,27 @@ client
 		console.error('Error connecting to PostgreSQL database', err);
 	});
 
-app.get("/", (req, resp) =>{
-    resp.json({msg:"hello"})
+
+
+app.use(express.static('web'))
+app.get("/sign-up", (req, resp) =>{
+    resp.sendFile(path.join(__dirname, 'web', 'sign-up.html'));
+})
+app.get("/login", (req, resp) =>{
+    resp.sendFile(path.join(__dirname, 'web', 'login.html'));
+})
+app.get("/profile", (req, resp) =>{
+    resp.sendFile(path.join(__dirname, 'web', 'profile.html'));
+})
+
+app.post("api/register", (req, resp) =>{
+    
+})
+
+app.post("api/login", (req, resp) =>{
+    
+})
+
+app.listen("8080", () =>{
+    console.log("ListenAndServe: http://localhost:8080/")
 })
