@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const verifyToken = require('./middlewares/authMiddleware'); //Middleware
 
 const { Client } = require('pg');
 
@@ -99,10 +100,7 @@ app.post("/api/login", async (req, resp) =>{
 
         const token = jwt.sign(
             {
-                id: user.id,
                 email: user.email,
-                first_name: user.first_name,
-                last_name: user.last_name,
             },
             JWT_SECRET,
             { expiresIn: '1h' }
@@ -117,6 +115,23 @@ app.post("/api/login", async (req, resp) =>{
         resp.status(500).json({ error: 'Internal Server Error' });
 	}
 })
+
+app.get('/api/profile/info', verifyToken, async (req, res) => {
+    try {
+        const userEmail = req.email; // email from middleware
+        const user = await client.query('SELECT first_name, last_name, email FROM users WHERE email = $1', [userEmail]);
+
+        if (user.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json(user.rows[0]); // Отправляем данные пользователя клиенту
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 
 app.listen("8080", () =>{
     console.log("ListenAndServe: http://localhost:8080/")
